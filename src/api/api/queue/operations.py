@@ -5,6 +5,11 @@ import opentracing
 
 queue_host = os.getenv("QUEUE_HOST", "localhost")
 queue = os.getenv("QUEUE", "evento")
+queue_user = os.getenv("RABBITMQ_USER", "queueUser")
+queue_pwd = os.getenv("RABBITMQ_USER", "queuePwd")
+
+
+
 routing_key = os.getenv("ROUTING_KEY", "evento")
 exchange = os.getenv("EXCHANGE", "")
 
@@ -20,9 +25,8 @@ def send_to_queue(data):
         opentracing_tracer.inject(span, opentracing.Format.TEXT_MAP, text_carrier)
 
         connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host=queue_host,credentials=pika.credentials.PlainCredentials(username='logUser', password='logPwd',erase_on_connect=False)))
+            pika.ConnectionParameters(host=queue_host,credentials=pika.credentials.PlainCredentials(username=queue_user, password=queue_pwd,erase_on_connect=False)))
         channel = connection.channel()
         channel.queue_declare(queue=queue,durable=True)
         channel.basic_publish(exchange=exchange, routing_key=routing_key, body=data.toJSON(),properties=pika.BasicProperties(headers=text_carrier))
-        connection.close()
-
+        connection.close()            

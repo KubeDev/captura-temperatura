@@ -1,5 +1,9 @@
 version: '3.8'
 
+networks: 
+  mongo_net: 
+    driver: bridge
+
 services:
   rabbitmq:
     container_name: RabbitMQ
@@ -8,8 +12,8 @@ services:
       - "15672:15672"
       - "5672:5672" 
     environment:
-      RABBITMQ_DEFAULT_USER: logUser
-      RABBITMQ_DEFAULT_PASS: logPwd  
+      RABBITMQ_DEFAULT_USER: queueUser
+      RABBITMQ_DEFAULT_PASS: queuePwd  
 
   jaeger:
     image: jaegertracing/all-in-one:1.22.0
@@ -21,6 +25,21 @@ services:
     image: mongo:latest
     ports:
       - "27017:27017"
+    networks: 
+      - mongo_net
     environment: 
       MONGO_INITDB_ROOT_USERNAME: mongouser
-      MONGO_INITDB_ROOT_PASSWORD: mongopwd      
+      MONGO_INITDB_ROOT_PASSWORD: mongopwd  
+
+  mongo_express:
+    image: mongo-express
+    ports: 
+      - "8081:8081"
+    restart: always
+    networks: 
+      - mongo_net
+    environment: 
+      ME_CONFIG_MONGODB_SERVER: mongodb
+      ME_CONFIG_MONGODB_ADMINUSERNAME: mongouser   
+      ME_CONFIG_MONGODB_ADMINPASSWORD: mongopwd
+      ME_CONFIG_MONGODB_ENABLE_ADMIN: "true"

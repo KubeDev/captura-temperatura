@@ -7,7 +7,7 @@ from opentracing.ext import tags
 from opentracing.propagation import Format
 from api.traccing import tracing, opentracing_tracer
 
-ns_evento = api.namespace('Evento', '')
+ns_evento = api.namespace('evento', '')
 
 evento_model = ns_evento.model('EventoPostModel', {
                     'dataHora': fields.DateTime(required=True),
