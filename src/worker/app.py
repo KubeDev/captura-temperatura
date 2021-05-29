@@ -6,19 +6,21 @@ import opentracing
 import logging
 from jaeger_client import Config
 
+JAEGER_HOST = os.getenv('JAEGER_HOST', 'localhost')
+
 queue_host = os.getenv("QUEUE_HOST", "localhost")
 queue = os.getenv("QUEUE", "evento")
 routing_key = os.getenv("ROUTING_KEY", "evento")
 exchange = os.getenv("EXCHANGE", "")
 queue_user = os.getenv("RABBITMQ_USER", "queueUser")
-queue_pwd = os.getenv("RABBITMQ_USER", "queuePwd")
+queue_pwd = os.getenv("RABBITMQ_PWD", "queuePwd")
 
 mongodb_db = os.getenv("MONGODB_DB", "admin")
 mongodb_host = os.getenv("MONGODB_HOST", "localhost")
 mongodb_port = int(os.getenv("MONGODB_PORT", "27017"))
 mongodb_username = os.getenv("MONGODB_USERNAME", "mongouser")
 mongodb_password = os.getenv("MONGODB_PASSWORD", "mongopwd")
-
+JAEGER_HOST = os.getenv('JAEGER_HOST', 'localhost')
 
 def init_tracer(service):
     logging.getLogger('').handlers = []
@@ -31,6 +33,7 @@ def init_tracer(service):
                 'param': 1,
             },
             'logging': True,
+            'local_agent': {'reporting_host': JAEGER_HOST}
         },
         service_name=service,
     )

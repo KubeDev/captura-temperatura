@@ -6,7 +6,7 @@ import opentracing
 queue_host = os.getenv("QUEUE_HOST", "localhost")
 queue = os.getenv("QUEUE", "evento")
 queue_user = os.getenv("RABBITMQ_USER", "queueUser")
-queue_pwd = os.getenv("RABBITMQ_USER", "queuePwd")
+queue_pwd = os.getenv("RABBITMQ_PWD", "queuePwd")
 
 
 
