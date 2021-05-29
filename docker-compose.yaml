@@ -1,32 +1,56 @@
 version: '3.8'
 
 networks: 
-  mongo_net: 
+  tracing_net: 
     driver: bridge
 
 services:
-  rabbitmq:
-    container_name: RabbitMQ
-    image: rabbitmq:3.7.8-management
-    ports:
-      - "15672:15672"
-      - "5672:5672" 
-    environment:
-      RABBITMQ_DEFAULT_USER: queueUser
-      RABBITMQ_DEFAULT_PASS: queuePwd  
 
-  jaeger:
-    image: jaegertracing/all-in-one:1.22.0
+  api:
+    image: fabricioveronez/api-temperatura
+    build: 
+      dockerfile: ./Dockerfile
+      context: ./src/api
     ports:
-      - "6831:6831/udp"
-      - "16686:16686"     
+      - "8080:5000"      
+    networks: 
+      - tracing_net      
+    environment: 
+      QUEUE_HOST: rabbitmq
+      QUEUE: evento
+      ROUTING_KEY: evento
+      EXCHANGE: ""
+      RABBITMQ_USER: queueUser
+      RABBITMQ_PWD: queuePwd
+      JAEGER_HOST: jaeger  
+
+  worker:
+    image: fabricioveronez/worker-temperatura
+    build: 
+      dockerfile: ./Dockerfile
+      context: ./src/worker
+    networks: 
+      - tracing_net      
+    environment: 
+      QUEUE_HOST: rabbitmq
+      QUEUE: evento
+      ROUTING_KEY: evento
+      EXCHANGE: ""
+      RABBITMQ_USER: queueUser
+      RABBITMQ_PWD: queuePwd
+      JAEGER_HOST: jaeger        
+      MONGODB_DB: admin
+      MONGODB_HOST: mongodb
+      MONGODB_PORT: 27017
+      MONGODB_USERNAME: mongouser
+      MONGODB_PASSWORD: mongopwd
 
   mongodb:
     image: mongo:latest
     ports:
       - "27017:27017"
     networks: 
-      - mongo_net
+      - tracing_net
     environment: 
       MONGO_INITDB_ROOT_USERNAME: mongouser
       MONGO_INITDB_ROOT_PASSWORD: mongopwd  
@@ -37,9 +61,29 @@ services:
       - "8081:8081"
     restart: always
     networks: 
-      - mongo_net
+      - tracing_net
     environment: 
       ME_CONFIG_MONGODB_SERVER: mongodb
       ME_CONFIG_MONGODB_ADMINUSERNAME: mongouser   
       ME_CONFIG_MONGODB_ADMINPASSWORD: mongopwd
       ME_CONFIG_MONGODB_ENABLE_ADMIN: "true"
+
+  rabbitmq:
+    container_name: RabbitMQ
+    image: rabbitmq:3.7.8-management
+    ports:
+      - "15672:15672"
+      - "5672:5672" 
+    networks: 
+      - tracing_net         
+    environment:
+      RABBITMQ_DEFAULT_USER: queueUser
+      RABBITMQ_DEFAULT_PASS: queuePwd  
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.22.0
+    networks: 
+      - tracing_net          
+    ports:
+      - "6831:6831/udp"
+      - "16686:16686"           
